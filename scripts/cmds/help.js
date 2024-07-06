@@ -100,16 +100,16 @@ module.exports = {
 			pageNotFound: "Trang %1 không tồn tại"
 		},
 		en: {
-			help: "╭─────────────⭓"
+			help: ""
 				+ "\n%1"
-				+ "\n├─────⭔"
-				+ "\n│ Page [ %2/%3 ]"
-				+ "\n│ Currently, the bot has %4 commands that can be used"
-				+ "\n│ » Type %5help <page> to view the command list"
-				+ "\n│ » Type %5help to view the details of how to use that command"
-				+ "\n├────────⭔"
-				+ "\n│ %6"
-				+ "\n╰─────────────⭓",
+				+ "\n"
+				+ "\nPage [ %2/%3 ]\n"
+				+ "\nCurrently, the bot has %4 commands that can be used"
+				+ "\n» Type %5help <page> to view the command list"
+				+ "\n» Type %5help to view the details of how to use that command"
+				+ "\n"
+				+ "\n%6"
+				+ "\n",
 			help2: "%1├───────⭔"
 				+ "\n│ » Currently, the bot has %2 commands that can be used"
 				+ "\n│ » Type %3help <command name> to view the details of how to use that command"

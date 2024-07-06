@@ -7,6 +7,7 @@ const https = require("https");
 const agent = new https.Agent({
 	rejectUnauthorized: false
 });
+
 const { getStreamFromURL } = global.utils;
 
 module.exports = {

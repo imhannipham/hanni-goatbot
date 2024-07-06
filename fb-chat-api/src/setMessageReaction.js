@@ -35,6 +35,7 @@ module.exports = function (defaultFuncs, api, ctx) {
 			case "\uD83D\uDC4E": //:thumbsdown:
 			case "\u2764": //:heart:
 			case "\uD83D\uDC97": //:glowingheart:
+			case "\u23F1": // ⏳ Waiting Emoji
 			case "":
 				//valid
 				break;
@@ -65,6 +66,10 @@ module.exports = function (defaultFuncs, api, ctx) {
 			case ":dislike:":
 				reaction = "\uD83D\uDC4E";
 				break;
+			case ":waiting:":  
+			case "\u23F1":     
+					reaction = "\u23F1";  
+					break;
 			case ":heart:":
 				reaction = "\u2764";
 				break;
