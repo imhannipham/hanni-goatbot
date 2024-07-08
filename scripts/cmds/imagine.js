@@ -8,7 +8,7 @@ module.exports = {
     role: 0,
     category: 'image',
     description: {
-      en: "Generate a text to image using your imagination"
+      en: "Generate a text to image using your imagination."
     },
     guide: {
       en: '{pn} [prompt]',

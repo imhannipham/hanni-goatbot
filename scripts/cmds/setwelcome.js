@@ -1,167 +1,128 @@
-const { drive, getStreamFromURL, getExtFromUrl, getTime } = global.utils;
+const fs = require('fs-extra');
+const axios = require('axios');
+const request = require('request');
+const path = require('path');
+
+/**
+ * @Vietnamese
+ * Trước tiên bạn cần có kiến thức về javascript như biến, hàm, vòng lặp, mảng, object, promise, async/await,... bạn có thể tìm hiểu thêm tại đây: https://developer.mozilla.org/en-US/docs/Web/JavaScript hoặc tại đây: https://www.w3schools.com/js/
+ * Tiếp theo là kiến thức về Nodejs như require, module.exports, ... bạn có thể tìm hiểu thêm tại đây: https://nodejs.org/en/docs/
+ * Và kiến thức về api không chính thức của facebook như api.sendMessage, api.changeNickname,... bạn có thể tìm hiểu thêm tại đây: https://github.com/ntkhang03/fb-chat-api/blob/master/DOCS.md
+ * Nếu tên file kết thúc bằng `.eg.js` thì nó sẽ không được load vào bot, nếu muốn load vào bot thì đổi phần mở rộng của file thành `.js`
+ */
+
+/**
+ * @English
+ * First you need to have knowledge of javascript such as variables, functions, loops, arrays, objects, promise, async/await, ... you can learn more at here: https://developer.mozilla.org/en-US/docs/Web/JavaScript or here: https://www.w3schools.com/js/
+ * Next is knowledge of Nodejs such as require, module.exports, ... you can learn more at here: https://nodejs.org/en/docs/
+ * And knowledge of unofficial facebook api such as api.sendMessage, api.changeNickname,... you can learn more at here: https://github.com/ntkhang03/fb-chat-api/blob/master/DOCS.md
+ * If the file name ends with `.eg.js` then it will not be loaded into the bot, if you want to load it into the bot then change the extension of the file to `.js`
+ */
 
 module.exports = {
 	config: {
-		name: "setwelcome",
-		aliases: ["setwc"],
-		version: "1.7",
-		author: "NTKhang",
+		name: "resend",
+		version: "2.0.0",
+		author: "Thọ & Mod By DuyVuong",
 		countDown: 5,
 		role: 1,
-		description: {
-			vi: "Chỉnh sửa nội dung tin nhắn chào mừng thành viên mới tham gia vào nhóm chat của bạn",
-			en: "Edit welcome message content when new member join your group chat"
+		shortDescription: {
+			vi: "Gửi lại tin nhắn đã xóa",
+			en: "Resends Messages"
 		},
-		category: "custom",
+		description: {
+			vi: "Gửi lại tin nhắn đã xóa",
+			en: "Resends Messages"
+		},
+		category: "general",
 		guide: {
-			vi: {
-				body: "   {pn} text [<nội dung> | reset]: chỉnh sửa nội dung văn bản hoặc reset về mặc định, với những shortcut có sẵn:"
-					+ "\n  + {userName}: tên của thành viên mới"
-					+ "\n  + {userNameTag}: tên của thành viên mới (tag)"
-					+ "\n  + {boxName}:  tên của nhóm chat"
-					+ "\n  + {multiple}: bạn || các bạn"
-					+ "\n  + {session}:  buổi trong ngày"
-					+ "\n\n   Ví dụ:"
-					+ "\n    {pn} text Hello {userName}, welcome to {boxName}, chúc {multiple} một ngày mới vui vẻ"
-					+ "\n"
-					+ "\n   Reply (phản hồi) hoặc gửi kèm một tin nhắn có file với nội dung {pn} file: để thêm tệp đính kèm vào tin nhắn chào mừng (ảnh, video, audio)"
-					+ "\n\n   Ví dụ:"
-					+ "\n    {pn} file reset: xóa gửi file",
-				attachment: {
-					[`${__dirname}/assets/guide/setwelcome/setwelcome_vi_1.png`]: "https://i.ibb.co/vd6bQrW/setwelcome-vi-1.png"
-				}
-			},
-			en: {
-				body: "   {pn} text [<content> | reset]: edit text content or reset to default, with some shortcuts:"
-					+ "\n  + {userName}: new member name"
-					+ "\n  + {userNameTag}: new member name (tag)"
-					+ "\n  + {boxName}:  group chat name"
-					+ "\n  + {multiple}: you || you guys"
-					+ "\n  + {session}:  session in day"
-					+ "\n\n   Example:"
-					+ "\n    {pn} text Hello {userName}, welcome to {boxName}, have a nice day {multiple}"
-					+ "\n"
-					+ "\n   Reply (phản hồi) or send a message with file with content {pn} file: to add file attachments to welcome message (image, video, audio)"
-					+ "\n\n   Example:"
-					+ "\n    {pn} file reset: delete file attachments",
-				attachment: {
-					[`${__dirname}/assets/guide/setwelcome/setwelcome_en_1.png`]: "https://i.ibb.co/vsCz0ks/setwelcome-en-1.png"
-				}
-			}
+			vi: "Dùng lệnh để bật/tắt chức năng gửi lại tin nhắn đã xóa",
+			en: "Use the command to enable/disable the resend message feature"
 		}
 	},
 
 	langs: {
 		vi: {
-			turnedOn: "Đã bật chức năng chào mừng thành viên mới",
-			turnedOff: "Đã tắt chức năng chào mừng thành viên mới",
-			missingContent: "Vui lùng nhập nội dung tin nhắn",
-			edited: "Đã chỉnh sửa nội dung tin nhắn chào mừng của nhóm bạn thành: %1",
-			reseted: "Đã reset nội dung tin nhắn chào mừng",
-			noFile: "Không có tệp đính kèm tin nhắn chào mừng nào để xóa",
-			resetedFile: "Đã reset tệp đính kèm thành công",
-			missingFile: "Hãy phản hồi tin nhắn này kèm file ảnh/video/audio",
-			addedFile: "Đã thêm %1 tệp đính kèm vào tin nhắn chào mừng của nhóm bạn"
+			resendEnabled: "Đã bật chức năng gửi lại tin nhắn.",
+			resendDisabled: "Đã tắt chức năng gửi lại tin nhắn.",
+			unsendMessage: "%1 đã gỡ tin nhắn\n\nNội dung: %2",
+			unsendMessageWithAttachment: "%1 đã gỡ tin nhắn\n%2 tệp đính kèm\n%3"
 		},
 		en: {
-			turnedOn: "Turned on welcome message",
-			turnedOff: "Turned off welcome message",
-			missingContent: "Please enter welcome message content",
-			edited: "Edited welcome message content of your group to: %1",
-			reseted: "Reseted welcome message content",
-			noFile: "No file attachments to delete",
-			resetedFile: "Reseted file attachments successfully",
-			missingFile: "Please reply this message with image/video/audio file",
-			addedFile: "Added %1 file attachments to your group welcome message"
+			resendEnabled: "Resend message feature enabled.",
+			resendDisabled: "Resend message feature disabled.",
+			unsendMessage: "%1 unsent the message\n\nContent: %2",
+			unsendMessageWithAttachment: "%1 unsent the message\n%2 Attachments\n%3"
 		}
 	},
 
-	onStart: async function ({ args, threadsData, message, event, commandName, getLang }) {
-		const { threadID, senderID, body } = event;
-		const { data, settings } = await threadsData.get(threadID);
+	onLoad: async function ({ api }) {
+		if (!global.logMessage) global.logMessage = new Map();
+		if (!global.data.botID) global.data.botID = await api.getCurrentUserID();
+	},
 
-		switch (args[0]) {
-			case "text": {
-				if (!args[1])
-					return message.reply(getLang("missingContent"));
-				else if (args[1] == "reset")
-					delete data.welcomeMessage;
-				else
-					data.welcomeMessage = body.slice(body.indexOf(args[0]) + args[0].length).trim();
-				await threadsData.set(threadID, {
-					data
-				});
-				message.reply(data.welcomeMessage ? getLang("edited", data.welcomeMessage) : getLang("reseted"));
-				break;
+	handleEvent: async function ({ event, api, getLang }) {
+		let { messageID, senderID, threadID, body: content } = event;
+		const thread = global.data.threadData.get(parseInt(threadID)) || {};
+
+		if (typeof thread["resend"] !== "undefined" && thread["resend"] === false) return;
+		if (senderID == global.data.botID) return;
+
+		if (event.type !== "message_unsend") {
+			global.logMessage.set(messageID, {
+				msgBody: content,
+				attachment: event.attachments,
+			});
+			console.log("Message logged:", { messageID, content, attachments: event.attachments });
+		} else {
+			var getMsg = global.logMessage.get(messageID);
+			if (!getMsg) {
+				console.log("No logged message found for message ID:", messageID);
+				return;
 			}
-			case "file": {
-				if (args[1] == "reset") {
-					const { welcomeAttachment } = data;
-					if (!welcomeAttachment)
-						return message.reply(getLang("noFile"));
-					try {
-						await Promise.all(data.welcomeAttachment.map(fileId => drive.deleteFile(fileId)));
-						delete data.welcomeAttachment;
-					}
-					catch (e) { }
-					await threadsData.set(threadID, {
-						data
-					});
-					message.reply(getLang("resetedFile"));
+
+			const getRequestorID = await api.getUserInfo(event.senderID);
+			const requesterName = getRequestorID[event.senderID].name;
+
+			if (!getMsg.attachment || getMsg.attachment.length === 0) {
+				console.log("Sending message without attachments:", getMsg.msgBody);
+				return api.sendMessage(getLang("unsendMessage", requesterName, getMsg.msgBody), threadID);
+			} else {
+				console.log("Sending message with attachments:", getMsg.attachment);
+				let num = 0;
+				let msg = {
+					body: getLang("unsendMessageWithAttachment", requesterName, getMsg.attachment.length, getMsg.msgBody ? `\n\nContent: ${getMsg.msgBody}` : ""),
+					attachment: [],
+				};
+
+				for (var i of getMsg.attachment) {
+					num += 1;
+					var getURL = await request.get(i.url);
+					var pathname = getURL.uri.pathname;
+					var ext = pathname.substring(pathname.lastIndexOf(".") + 1);
+					var filePath = path.join(__dirname, 'cache', `${num}.${ext}`);
+					var data = (await axios.get(i.url, { responseType: "arraybuffer" })).data;
+					fs.writeFileSync(filePath, Buffer.from(data, "utf-8"));
+					msg.attachment.push(fs.createReadStream(filePath));
 				}
-				else if (event.attachments.length == 0 && (!event.messageReply || event.messageReply.attachments.length == 0))
-					return message.reply(getLang("missingFile"), (err, info) => {
-						global.GoatBot.onReply.set(info.messageID, {
-							messageID: info.messageID,
-							author: senderID,
-							commandName
-						});
-					});
-				else {
-					saveChanges(message, event, threadID, senderID, threadsData, getLang);
-				}
-				break;
+				api.sendMessage(msg, threadID);
 			}
-			case "on":
-			case "off": {
-				settings.sendWelcomeMessage = args[0] == "on";
-				await threadsData.set(threadID, { settings });
-				message.reply(settings.sendWelcomeMessage ? getLang("turnedOn") : getLang("turnedOff"));
-				break;
-			}
-			default:
-				message.SyntaxError();
-				break;
 		}
 	},
 
-	onReply: async function ({ event, Reply, message, threadsData, getLang }) {
-		const { threadID, senderID } = event;
-		if (senderID != Reply.author)
-			return;
+	onStart: async function ({ api, event, Threads, getLang }) {
+		const { threadID, messageID } = event;
+		var data = (await Threads.getData(threadID)).data;
 
-		if (event.attachments.length == 0 && (!event.messageReply || event.messageReply.attachments.length == 0))
-			return message.reply(getLang("missingFile"));
-		saveChanges(message, event, threadID, senderID, threadsData, getLang);
+		if (typeof data["resend"] == "undefined" || data["resend"] == false) {
+			data["resend"] = true;
+		} else {
+			data["resend"] = false;
+		}
+
+		await Threads.setData(parseInt(threadID), { data });
+		global.data.threadData.set(parseInt(threadID), data);
+
+		return api.sendMessage(data["resend"] ? getLang("resendEnabled") : getLang("resendDisabled"), threadID, messageID);
 	}
 };
-
-async function saveChanges(message, event, threadID, senderID, threadsData, getLang) {
-	const { data } = await threadsData.get(threadID);
-	const attachments = [...event.attachments, ...(event.messageReply?.attachments || [])].filter(item => ["photo", 'png', "animated_image", "video", "audio"].includes(item.type));
-	if (!data.welcomeAttachment)
-		data.welcomeAttachment = [];
-
-	await Promise.all(attachments.map(async attachment => {
-		const { url } = attachment;
-		const ext = getExtFromUrl(url);
-		const fileName = `${getTime()}.${ext}`;
-		const infoFile = await drive.uploadFile(`setwelcome_${threadID}_${senderID}_${fileName}`, await getStreamFromURL(url));
-		data.welcomeAttachment.push(infoFile.id);
-	}));
-
-	await threadsData.set(threadID, {
-		data
-	});
-	message.reply(getLang("addedFile", attachments.length));
-}

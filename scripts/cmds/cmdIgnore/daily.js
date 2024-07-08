@@ -5,7 +5,7 @@ module.exports = {
 		name: "daily",
 		version: "1.2",
 		author: "NTKhang",
-		countDown: 5,
+		countDown:
 		role: 0,
 		description: {
 			vi: "Nhận quà hàng ngày",
